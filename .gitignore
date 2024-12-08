@@ -9,6 +9,8 @@
 #
 # Normal rules (sorted alphabetically)
 #
+*moe.*
+*.orig
 *.rej
 .*
 *.a
