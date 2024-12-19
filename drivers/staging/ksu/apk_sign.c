@@ -321,4 +321,3 @@ bool is_manager_apk(char *path)
 /*	|| check_v2_signature(path, custom_size, custom_hash)  // add more as you like 	*/
 	);
 }
-}
