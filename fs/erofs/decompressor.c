@@ -331,7 +331,7 @@ static int z_erofs_decompress_generic(struct z_erofs_decompress_req *rq,
 				return PTR_ERR(dst);
 
 			rq->inplace_io = false;
-			ret = alg->decompress(rq, dst);
+			ret = alg->decompress(rq, dst, NULL);
 			if (!ret)
 				copy_from_pcpubuf(rq->out, dst, rq->pageofs_out,
 						  rq->outputsize);
