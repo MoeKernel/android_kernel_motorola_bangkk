@@ -23,6 +23,8 @@ CONFIG_PRIME_CPU_MASK=3
 
 CONFIG_SCHED_CASS=y
 
+# CONFIG_SND_SOC_FS1815N is not set
+
 #
 # KernelSU
 #
