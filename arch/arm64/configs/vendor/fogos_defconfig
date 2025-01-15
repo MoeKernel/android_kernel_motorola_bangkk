@@ -22,6 +22,14 @@ CONFIG_BIG_CPU_MASK=3
 CONFIG_PRIME_CPU_MASK=3
 
 #
+# KernelSU
+#
+CONFIG_KSU=y
+# CONFIG_KSU_DEBUG is not set
+# end of KernelSU
+# end of Device Drivers
+
+#
 # Features SUSFS
 #
 CONFIG_KSU_SUSFS=y
