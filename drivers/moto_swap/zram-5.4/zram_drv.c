@@ -939,7 +939,7 @@ static ssize_t comp_algorithm_show(struct device *dev,
 	struct zram *zram = dev_to_zram(dev);
 
 	down_read(&zram->init_lock);
-	sz = zcomp_available_show(zram->compressor, buf);
+	sz = moto_zcomp_available_show(zram->compressor, buf);
 	up_read(&zram->init_lock);
 
 	return sz;
@@ -958,7 +958,7 @@ static ssize_t comp_algorithm_store(struct device *dev,
 	if (sz > 0 && compressor[sz - 1] == '\n')
 		compressor[sz - 1] = 0x00;
 
-	if (!zcomp_available_algorithm(compressor))
+	if (!moto_zcomp_available_algorithm(compressor))
 		return -EINVAL;
 
 	down_write(&zram->init_lock);
@@ -1228,13 +1228,13 @@ compress_again:
 	}
 	zram_slot_unlock(zram, index);
 
-	zstrm = zcomp_stream_get(zram->comp);
+	zstrm = moto_zcomp_stream_get(zram->comp);
 	src = kmap_atomic(page);
-	ret = zcomp_compress(zstrm, src, &comp_len);
+	ret = moto_zcomp_compress(zstrm, src, &comp_len);
 	kunmap_atomic(src);
 
 	if (unlikely(ret)) {
-		zcomp_stream_put(zram->comp);
+		moto_zcomp_stream_put(zram->comp);
 		pr_err("Compression failed! err=%d\n", ret);
 		zs_free(zram->mem_pool, handle);
 		return ret;
@@ -1251,7 +1251,7 @@ compress_again:
 				__GFP_MOVABLE |
 				__GFP_CMA);
 	if (!handle) {
-		zcomp_stream_put(zram->comp);
+		moto_zcomp_stream_put(zram->comp);
 		atomic64_inc(&zram->stats.writestall);
 		handle = zs_malloc(zram->mem_pool, comp_len,
 				GFP_NOIO | __GFP_HIGHMEM |
@@ -1265,7 +1265,7 @@ compress_again:
 	update_used_max(zram, alloced_pages);
 
 	if (zram->limit_pages && alloced_pages > zram->limit_pages) {
-		zcomp_stream_put(zram->comp);
+		moto_zcomp_stream_put(zram->comp);
 		zs_free(zram->mem_pool, handle);
 		return -ENOMEM;
 	}
@@ -1279,7 +1279,7 @@ compress_again:
 	if (comp_len == PAGE_SIZE)
 		kunmap_atomic(src);
 
-	zcomp_stream_put(zram->comp);
+	moto_zcomp_stream_put(zram->comp);
 	zs_unmap_object(zram->mem_pool, handle);
 	atomic64_add(comp_len, &zram->stats.compr_data_size);
 
@@ -1372,7 +1372,7 @@ static int __zram_bvec_read(struct zram *zram, struct page *page, u32 index,
 	size = zram_get_obj_size(zram, index);
 
 	if (size != PAGE_SIZE)
-		zstrm = zcomp_stream_get(zram->comp);
+		zstrm = moto_zcomp_stream_get(zram->comp);
 
 	src = zs_map_object(zram->mem_pool, handle, ZS_MM_RO);
 	if (size == PAGE_SIZE) {
@@ -1382,9 +1382,9 @@ static int __zram_bvec_read(struct zram *zram, struct page *page, u32 index,
 		ret = 0;
 	} else {
 		dst = kmap_atomic(page);
-		ret = zcomp_decompress(zstrm, src, size, dst);
+		ret = moto_zcomp_decompress(zstrm, src, size, dst);
 		kunmap_atomic(dst);
-		zcomp_stream_put(zram->comp);
+		moto_zcomp_stream_put(zram->comp);
 	}
 	zs_unmap_object(zram->mem_pool, handle);
 	zram_slot_unlock(zram, index);
@@ -1460,13 +1460,13 @@ static int __zram_bvec_write(struct zram *zram, struct bio_vec *bvec,
 #endif
 
 compress_again:
-	zstrm = zcomp_stream_get(zram->comp);
+	zstrm = moto_zcomp_stream_get(zram->comp);
 	src = kmap_atomic(page);
-	ret = zcomp_compress(zstrm, src, &comp_len);
+	ret = moto_zcomp_compress(zstrm, src, &comp_len);
 	kunmap_atomic(src);
 
 	if (unlikely(ret)) {
-		zcomp_stream_put(zram->comp);
+		moto_zcomp_stream_put(zram->comp);
 		pr_err("Compression failed! err=%d\n", ret);
 		zs_free(zram->mem_pool, handle);
 		return ret;
@@ -1496,7 +1496,7 @@ compress_again:
 				__GFP_CMA |
 				__GFP_OFFLINABLE); // NOTE: __GFP_OFFLINABLE only for QCOM 5.4 kernel
 	if (!handle) {
-		zcomp_stream_put(zram->comp);
+		moto_zcomp_stream_put(zram->comp);
 		atomic64_inc(&zram->stats.writestall);
 		handle = zs_malloc(zram->mem_pool, comp_len,
 				GFP_NOIO | __GFP_HIGHMEM |
@@ -1511,7 +1511,7 @@ compress_again:
 	update_used_max(zram, alloced_pages);
 
 	if (zram->limit_pages && alloced_pages > zram->limit_pages) {
-		zcomp_stream_put(zram->comp);
+		moto_zcomp_stream_put(zram->comp);
 		zs_free(zram->mem_pool, handle);
 		return -ENOMEM;
 	}
@@ -1525,7 +1525,7 @@ compress_again:
 	if (comp_len == PAGE_SIZE)
 		kunmap_atomic(src);
 
-	zcomp_stream_put(zram->comp);
+	moto_zcomp_stream_put(zram->comp);
 	zs_unmap_object(zram->mem_pool, handle);
 	atomic64_add(comp_len, &zram->stats.compr_data_size);
 out:
@@ -1845,7 +1845,7 @@ static void zram_reset_device(struct zram *zram)
 	/* I/O operation under all of CPU are done so let's free */
 	zram_meta_free(zram, disksize);
 	memset(&zram->stats, 0, sizeof(zram->stats));
-	zcomp_destroy(comp);
+	moto_zcomp_destroy(comp);
 	reset_bdev(zram);
 }
 
@@ -1874,7 +1874,7 @@ static ssize_t disksize_store(struct device *dev,
 		goto out_unlock;
 	}
 
-	comp = zcomp_create(zram->compressor);
+	comp = moto_zcomp_create(zram->compressor);
 	if (IS_ERR(comp)) {
 		pr_err("Cannot initialise %s compressing backend\n",
 				zram->compressor);
@@ -2293,7 +2293,7 @@ static int __init zram_init(void)
 	int ret;
 
 	ret = cpuhp_setup_state_multi(CPUHP_ZCOMP_PREPARE, "block/zram:prepare",
-				      zcomp_cpu_up_prepare, zcomp_cpu_dead);
+				      moto_zcomp_cpu_up_prepare, moto_zcomp_cpu_dead);
 	if (ret < 0)
 		return ret;
 
