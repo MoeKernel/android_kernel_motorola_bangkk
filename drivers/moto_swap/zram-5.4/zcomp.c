@@ -63,7 +63,7 @@ static struct zcomp_strm *zcomp_strm_alloc(struct zcomp *comp)
 	return zstrm;
 }
 
-bool zcomp_available_algorithm(const char *comp)
+bool moto_zcomp_available_algorithm(const char *comp)
 {
 	int i;
 
@@ -82,7 +82,7 @@ bool zcomp_available_algorithm(const char *comp)
 }
 
 /* show available compressors */
-ssize_t zcomp_available_show(const char *comp, char *buf)
+ssize_t moto_zcomp_available_show(const char *comp, char *buf)
 {
 	bool known_algorithm = false;
 	ssize_t sz = 0;
@@ -111,17 +111,17 @@ ssize_t zcomp_available_show(const char *comp, char *buf)
 	return sz;
 }
 
-struct zcomp_strm *zcomp_stream_get(struct zcomp *comp)
+struct zcomp_strm *moto_zcomp_stream_get(struct zcomp *comp)
 {
 	return *get_cpu_ptr(comp->stream);
 }
 
-void zcomp_stream_put(struct zcomp *comp)
+void moto_zcomp_stream_put(struct zcomp *comp)
 {
 	put_cpu_ptr(comp->stream);
 }
 
-int zcomp_compress(struct zcomp_strm *zstrm,
+int moto_zcomp_compress(struct zcomp_strm *zstrm,
 		const void *src, unsigned int *dst_len)
 {
 	/*
@@ -145,7 +145,7 @@ int zcomp_compress(struct zcomp_strm *zstrm,
 			zstrm->buffer, dst_len);
 }
 
-int zcomp_decompress(struct zcomp_strm *zstrm,
+int moto_zcomp_decompress(struct zcomp_strm *zstrm,
 		const void *src, unsigned int src_len, void *dst)
 {
 	unsigned int dst_len = PAGE_SIZE;
@@ -155,7 +155,7 @@ int zcomp_decompress(struct zcomp_strm *zstrm,
 			dst, &dst_len);
 }
 
-int zcomp_cpu_up_prepare(unsigned int cpu, struct hlist_node *node)
+int moto_zcomp_cpu_up_prepare(unsigned int cpu, struct hlist_node *node)
 {
 	struct zcomp *comp = hlist_entry(node, struct zcomp, node);
 	struct zcomp_strm *zstrm;
@@ -172,7 +172,7 @@ int zcomp_cpu_up_prepare(unsigned int cpu, struct hlist_node *node)
 	return 0;
 }
 
-int zcomp_cpu_dead(unsigned int cpu, struct hlist_node *node)
+int moto_zcomp_cpu_dead(unsigned int cpu, struct hlist_node *node)
 {
 	struct zcomp *comp = hlist_entry(node, struct zcomp, node);
 	struct zcomp_strm *zstrm;
@@ -202,7 +202,7 @@ cleanup:
 	return ret;
 }
 
-void zcomp_destroy(struct zcomp *comp)
+void moto_zcomp_destroy(struct zcomp *comp)
 {
 	cpuhp_state_remove_instance(CPUHP_ZCOMP_PREPARE, &comp->node);
 	free_percpu(comp->stream);
@@ -217,12 +217,12 @@ void zcomp_destroy(struct zcomp *comp)
  * case of allocation error, or any other error potentially
  * returned by zcomp_init().
  */
-struct zcomp *zcomp_create(const char *compress)
+struct zcomp *moto_zcomp_create(const char *compress)
 {
 	struct zcomp *comp;
 	int error;
 
-	if (!zcomp_available_algorithm(compress))
+	if (!moto_zcomp_available_algorithm(compress))
 		return ERR_PTR(-EINVAL);
 
 	comp = kzalloc(sizeof(struct zcomp), GFP_KERNEL);
