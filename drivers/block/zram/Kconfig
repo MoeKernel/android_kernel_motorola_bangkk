@@ -54,6 +54,12 @@ config ZRAM_DEF_COMP
 	default "lz4hc" if ZRAM_DEF_COMP_LZ4HC
 	default "842" if ZRAM_DEF_COMP_842
 
+config ZRAM_SIZE_OVERRIDE
+    int "ZRAM size to set from kernel (e.g., set 4GB using config: ZRAM_SIZE_OVERRIDE=4)"
+    range 1 16
+    default 4
+    depends on ZRAM
+
 config ZRAM_WRITEBACK
        bool "Write back incompressible or idle page to backing device"
        depends on ZRAM
