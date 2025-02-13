@@ -1,2 +1,5 @@
 # add -Wall to try to catch everything we can.
-obj-$(CONFIG_MMI_ANNOTATE) += mmi_annotate.o
+EXTRA_CFLAGS += -Wall
+EXTRA_CFLAGS += -I$(ANDROID_BUILD_TOP)/motorola/kernel/modules/include
+
+obj-m += mmi_annotate.o
