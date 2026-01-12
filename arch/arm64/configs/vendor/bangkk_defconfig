@@ -663,7 +663,7 @@ CONFIG_MOT_SENSOR_PRE_POWERUP=y
 #
 # General architecture-dependent options
 #
-CONFIG_KPROBES=y
+# CONFIG_KPROBES is not set
 CONFIG_JUMP_LABEL=y
 # CONFIG_STATIC_KEYS_SELFTEST is not set
 CONFIG_UPROBES=y
