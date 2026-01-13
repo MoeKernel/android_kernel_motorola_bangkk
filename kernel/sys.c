@@ -1213,18 +1213,28 @@ static void override_custom_release(char __user *release, size_t len)
 {
 #ifdef CONFIG_UNAME_OVERRIDE
 	char *buf;
+	size_t slen;
 
 	buf = kstrdup_quotable_cmdline(current, GFP_KERNEL);
-	if (buf == NULL)
+	if (!buf)
 		return;
 
 	if (strstr(buf, CONFIG_UNAME_OVERRIDE_TARGET)) {
-		copy_to_user(release, CONFIG_UNAME_OVERRIDE_STRING,
-			       strlen(CONFIG_UNAME_OVERRIDE_STRING) + 1);
+		slen = strlen(CONFIG_UNAME_OVERRIDE_STRING) + 1;
+
+		if (slen > len)
+			slen = len;
+
+		if (copy_to_user(release, CONFIG_UNAME_OVERRIDE_STRING,
+			       slen)) {
+			kfree(buf);
+			return;
+		}
 	}
 
 	kfree(buf);
 #endif
+}
 
 /*
  * Work around broken programs that cannot handle "Linux 3.0".
