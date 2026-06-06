@@ -39,7 +39,7 @@
 /* Wait time on the device for Host to set BHI_INTVEC */
 #define MHI_BHI_INTVEC_MAX_CNT			200
 #define MHI_BHI_INTVEC_WAIT_MS		50
-#define MHI_WAKEUP_TIMEOUT_CNT		20
+#define MHI_WAKEUP_TIMEOUT_CNT		25
 #define MHI_MASK_CH_EV_LEN		32
 #define MHI_RING_CMD_ID			0
 #define MHI_RING_PRIMARY_EVT_ID		1
@@ -3935,6 +3935,9 @@ static void mhi_dev_enable(struct work_struct *work)
 		mhi_log(MHI_MSG_VERBOSE,
 			"Cleared reset before waiting for M0\n");
 	}
+
+	if (ep_pcie_get_linkstatus(mhi->phandle) != EP_PCIE_LINK_ENABLED)
+		mhi_log(MHI_MSG_ERROR, "warning: PCIe BME unset error");
 
 	while (state != MHI_DEV_M0_STATE &&
 		((max_cnt < MHI_SUSPEND_TIMEOUT) || mhi->no_m0_timeout)) {
